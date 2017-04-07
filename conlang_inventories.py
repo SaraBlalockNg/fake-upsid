@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import font
 from functools import partial
 from inventories import *
 from articulations import *
@@ -10,7 +11,7 @@ class App(Frame):
     def __init__(self, master=None, *pargs):
         
         Frame.__init__(self, master, *pargs)
-        self.master.title("Fake UPSID")
+        self.master.title("CLIPS")
         self.master.minsize(600, 100)
         self.grid(row = 0)
 
@@ -141,6 +142,8 @@ class App(Frame):
             y.grid(row = count,column = 1)
             self.count_list.append(y)
             count +=1
+
+    
             
         self.home_button.bind('<Button-1>',self.remove_list)
         self.home_button.grid(row = 1, column = 2)
@@ -736,7 +739,7 @@ class App(Frame):
         self.ask_compare.grid_forget()
   
 root = Tk()
-cuter = font.Font(family="Arial",size=10,weight="normal")
+cuter = font.Font(family="Arial",size=14,weight="normal")
 root.option_add("*Font", cuter)
 app = App(master = root)
 app.mainloop()

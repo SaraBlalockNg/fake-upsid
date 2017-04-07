@@ -82,7 +82,7 @@ klingon = ['ph','b','v','m','w','n','r','tlF','d.','l','s.',
 
 laadan = ['a_','3','I','o','u','m','b','w','n','d','0D','rA',
 			'hlF','l','S','Z','j','h']#done with ASCII (no dipthongs)
-			
+
 loglan = ['a','e','i','o','u','j','w','E',
           'O','"@','b','S','Z','d','f','g',
           'h','k','l','m','n','p',
@@ -94,7 +94,7 @@ lojban = ['m','n','p','b','f','v','m','t','d','s','z','l','S','Z',
 		'ai','au','Ei','oi','ia','ie','ii','io','ua','u','ui'
 		]#done with ASCII + dipthongs
 
-navi = ['aU','aI','EU','EI''i','u','U','I','o','E','æ','a',
+navi = ['aU','aI','EU','EI''i','u','U','I','o','E','aa','a',
 	'l','r','p',"p'",'t',"t'",'k',"k'",'?','f',
 	's','v','z','h','m','n','ts','N',
 	'r[','j','w'] # done with ASCII
@@ -111,7 +111,7 @@ sindarin = ['p','b','m','f','v','0D','6D',
 	'k','g','N','x','w','h','hw','i','i:',
 	'y','y:','a','y:','u','u:','E','E:','I','U','I:','U:',
 	'O','O:','ai','Ei','ui','au','aE','OE'] # done with ASCII
-	
+
 
 
 old_sindarin = ['p','b','m','f','v','0D','6D',
@@ -153,26 +153,26 @@ valyrian = ['a','a:','b','d','e','e:','g','gF','h','i','i:','dZ','Z','j',
 			'hr','s','t','0D','u','u:','v','w','y','y:','z', 'a:e','ae',
 			'ao','a:o','ia','ia:','io','io:','ie','ie:','ua','ua:','uo',
 			'uo:','ue','ue:'] #done with ASCII + Dipthongs
-			
-verdurian = ['a','a:','e','i','o','u','I','j','E)','y','p','b', 
+
+verdurian = ['a','a:','e','i','o','u','I','j','E)','y','p','b',
 			'f','v','6D','s','z','tD','d','tS','s','z','S','Z','m',
 			'n','l','r','k','g','q','R','tS','r['] #done with ASCII + Dipthongs
-					
+
 volapuk = ['a','a_','E','aa','b','tS','dZ','d','e','f','g','h','i','S',
 			'Z','k','l','m','n','o','O','o/','p','r','s','z','t','u',
-			'y','v','w','j','ts','dz','6D','0D','N'] # done with ASCII 
+			'y','v','w','j','ts','dz','6D','0D','N'] # done with ASCII
 
 vulcan =['a','u','o','E','a_','I','U','O','ES','a_)','i:','u:','o:',
 		'E:','a_:','oi','ei','ai','au','m','p','t','s','ts','k','j',
 		'n','b','d','z','tS','g','w','N','f','l','0D','X','v','r[',
 		'S','dZ','h'] #done with ASCII
-		
+
 wenedyk = ['i', 'E','a','u','O','i_','E{~}','O{~}','m','p','b',
 			'f','v','nD','tD','dD','tsD','dzD','sD','zD','lD',
 			'l','n','t','d','r','l','t.0','d.z','nj','tC,','dz',
 			's,','z,','C,','z.','j','kj','gJ','xJ','gFJ','gF',
 			'N','k','g','x','w']#same as Polish - Done with ASCII
-			
+
 # need to also look through the star wars languages
 
 dictionaries = [atlantean,aui,barsoomian,brithenig,
@@ -184,10 +184,10 @@ dictionaries = [atlantean,aui,barsoomian,brithenig,
                 toki_pona,tsolyani,valyrian,verdurian,volapuk,
                 vulcan,wenedyk]
 
-languages = ['atlantean','aui','barsoomian', 'brithenig', 
+languages = ['atlantean','aui','barsoomian', 'brithenig',
              'dothraki',"d'ni",
              'draconic','eskayan','esperanto', 'furbish',
-             'golic volcan','interlingua', 'ithkuil','klingon','laadan', 
+             'golic volcan','interlingua', 'ithkuil','klingon','laadan',
              'loglan', 'lojban',"na'vi",  'quenya', 'sindarin',
              'old sindarin','syldavian','talossan','teonaht',
              'toki pona','tsolyani','valyrian','verdurian',
@@ -226,9 +226,14 @@ for i in range(0,num_langs): # for each language
     for segment in dictionaries[i]:
         the_sum += frequencies[segment]
     frequency_index[languages[i]]=the_sum/len(dictionaries[i])
-    
+
 least_to_greatest = sorted(frequency_index.values())
+
 sorted_languages = []
 for percent in least_to_greatest:
     sorted_languages.append(list(frequency_index.keys())[list(
         frequency_index.values()).index(percent)])
+
+average_freq = sum(frequency for frequency in list(
+    frequency_index.values()))/len(frequency_index.values())
+    
