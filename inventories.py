@@ -2,6 +2,36 @@
 # each phoneme is a dictionary key, and its value is a list containing
 # the correct possible diacritic set
 
+
+french = ['p','b','tD','dD','k','g','f','v','sD','zD','S','Z','m','nD','nj',
+		  'lD','R','N','i','y','e','E:','E)','E)~','a+','aa~','o/','u','O',
+		  'o~','o:','a_)','a_)~','j','wj','w','E']
+russian = ['p','b','tD','dD','k','g','f','v','sD','zD','x','m','nD','rD',
+		   'rDJ','pJ','bJ','tDJ','dDJ','tS','fJ','vJ','sDJ','S-','Z-','mJ',
+		   'nDJ','lD-','lDJ','E','u','j','i','zDJ','ts','O','a','kJ']
+german = ['p','b','k','g','pf','f','v','s','z','S','Z','x','m','N','l',
+		  'R','h','i:','y:','e:','o/:','E:','a:','u:','o:','I','Y','E',
+		  '"@','4','U','O','j','E)','ai','Oi','au','d','ts','n','t']
+yiddish = ['p','b','t','d','tJ','dJ','k','g','?','m','n','nJ','N',
+			'r','r[','R','f','v','s','z','S','Z','sJ','zJ','x',
+			'gF','h','j','l','lj','ts','tS','tsJ','tSJ','dz',
+			'dZ','dzJ','dZJ','I','E','3','a','U','O','aE','EI','O3']
+english = ['p','b','t','d','k','g','m','n','N','tS','dZ','f',
+			'v','s','z','S','Z','X','h','w','j','l','rA',
+			'0D','6D','i','I','e','E','aa','"@','a_','^',
+			'U','o','u','"@.','aI','OI','aU']
+dutch = ['p','b','t','d','c','k','?','m','n','nj','f','v','s',
+			'z','S','Z','X','hh','r[','j','l','vA','I','Y','E',
+			'"@','a_','O','i','y','u','i:','e:','a:','o:','y:',
+			'o/:','E:','E):','Ei','E)y','^u']
+boholano_visayan = ['p','b','m','w','t','d','s','n','w','rA','tS','dz',
+			'k','g','N','?','h','i','a','"@']#done with ASCII (no dipthongs)
+
+parent_inventories = {'french':french,'russian':russian,'german':german,
+						'yiddish':yiddish,'english':english,'dutch':dutch,'boholano_visayan':boholano_visayan}
+
+#########################################################################
+
 atlantean = ['p','b','t','d','k','g','m','n','r','s','S','x','j','l','w',
              'i','I','e','o','"@','E','O','a','ai','ei','oi']#done w/ ASCII
 
@@ -175,6 +205,38 @@ wenedyk = ['i', 'E','a','u','O','i_','E{~}','O{~}','m','p','b',
 
 # need to also look through the star wars languages
 
+parents = {'atlantean':'english',
+			'aui':'german',
+			'barsoomian':'english',
+			'brithenig':'english',
+            'dothraki':'english',
+			'dni':'english',
+            'draconic':'english',
+			'eskayan':'boholano_visayan',
+			'esperanto':['yiddish','russian'],
+			'furbish':'n/a',
+            'golic_volcan':'english',
+			'interlingua':'english',
+			'ithkuil_revised':'english',
+			'klingon':'english',
+            'laadan':'english',
+			'loglan':'english',
+			'lojban':'english',
+			'navi':'english',
+			'quenya':'english',
+			'sindarin':'english',
+            'old_sindarin':'english',
+			'syldavian':'french',
+			'talossan':'english',
+			'teonaht':'english',
+            'toki_pona':['english','french'],
+			'tsolyani':'english',
+			'valyrian':'english',
+			'verdurian':'english',
+			'volapuk':'german',
+            'vulcan':'english',
+			'wenedyk':'dutch'}
+
 dictionaries = [atlantean,aui,barsoomian,brithenig,
                 dothraki,dni,
                 draconic,eskayan,esperanto,furbish,
@@ -183,6 +245,14 @@ dictionaries = [atlantean,aui,barsoomian,brithenig,
                 old_sindarin,syldavian,talossan,teonaht,
                 toki_pona,tsolyani,valyrian,verdurian,volapuk,
                 vulcan,wenedyk]
+dict_keys = ['atlantean','aui','barsoomian', 'brithenig',
+             'dothraki',"dni",
+             'draconic','eskayan','esperanto', 'furbish',
+             'golic_volcan','interlingua', 'ithkuil_revised','klingon','laadan',
+             'loglan', 'lojban',"navi",  'quenya', 'sindarin',
+             'old_sindarin','syldavian','talossan','teonaht',
+             'toki_pona','tsolyani','valyrian','verdurian',
+             'volapuk','vulcan','wenedyk']
 
 languages = ['atlantean','aui','barsoomian', 'brithenig',
              'dothraki',"d'ni",
@@ -192,6 +262,7 @@ languages = ['atlantean','aui','barsoomian', 'brithenig',
              'old sindarin','syldavian','talossan','teonaht',
              'toki pona','tsolyani','valyrian','verdurian',
              'volapuk','vulcan','wenedyk']
+
 
 classes = {'artistic':['atlantean','barsoomian','dothraki',
                        "d'ni",'draconic','furbish','golic volcan',

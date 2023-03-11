@@ -4,6 +4,7 @@ from functools import partial
 from inventories import *
 from articulations import *
 import textwrap
+import copy
 
 
 class App(Frame):
@@ -57,6 +58,10 @@ class App(Frame):
         self.ask_compare.grid(row = 7, column = 1,pady=5, sticky=W)
         self.ask_compare.bind("<Button-1>",self.compare)
 
+        self.ask_native = Label(text='compare a conlang to the native language of its author?',
+                                bg = 'white', fg= 'blue', cursor= "hand2")
+        self.ask_native.grid(row = 8, column = 1,pady=5, sticky=W)
+        self.ask_native.bind('<Button-1>',self.native_splash)
         # button to return to the home page
         self.home_button = Button(text = "Home")
         self.home_button.bind("<Button-1>",self.home)
@@ -66,12 +71,19 @@ class App(Frame):
         # 'hyperlinks to info about a langauge, used throughout
         # the interface
         self.list = []
+        self.native_button_list =[]
         for language in upper_languages:
             x = Label(text = language, anchor = NW,
                               bg = 'white', fg= 'blue', cursor= "hand2")
+            y = Label(text = language, anchor = NW,
+                              bg = 'white', fg= 'blue', cursor= "hand2")
             x.bind('<Button-1>',partial(self.language_info,
                                         lang = language))
+            y.bind('<Button-1>',partial(self.native_info,
+                                        lang = language))
             self.list.append(x)
+            self.native_button_list.append(y)
+
 
         self.mapping = {}
         self.langs_with_counts = []
@@ -89,7 +101,7 @@ class App(Frame):
         """A list of langauges organized alphabetically you can click on"
 "to find more about."""
         self.clear_home_board()
-        self.welcome['text']="Click on a language to learn about it's inventory:"
+        self.welcome['text']="Click on a language to learn about its inventory:"
         row_count = 1
         column_count = 1
         for language in self.list:
@@ -98,6 +110,84 @@ class App(Frame):
                 column_count = 2
             language.grid(row = row_count, column =column_count)
             row_count +=1
+
+    def native_splash(self,event):
+        '''compare a conlang to the
+        native language of its author?'''
+        # self.home_button.bind('<Button-1>',self.remove_native)
+        # self.home_button.grid(row = 2, column = 0,columnspan = 2)
+        self.clear_home_board()
+        self.welcome['text']="Click on a language to see how it compares to the native language(s) of its author(s):"
+        row_count = 1
+        column_count = 0
+        for language in self.native_button_list:
+            if row_count > 15:
+                row_count = 1
+                column_count = 1
+            language.grid(row = row_count, column =column_count)
+            row_count +=1
+        return 
+
+    def get_parent(self,index):
+        parent = parents[dict_keys[index]]
+        if type(parent) == list:
+            return ' and '.join([lang.title() for lang in parent])
+        else:
+            return parent.title() 
+
+    def get_parent_percent(self,conlang,index):
+        parent = parents[dict_keys[index]]
+        if type(parent) == list:
+            p_inventory = set([sound for p in parent for sound in parent_inventories[p]])
+        elif parent == 'n/a':
+            return 'n/a','n/a','n/a'
+        else:
+            p_inventory = set(parent_inventories[parent])
+        return(f'{len(set(conlang).intersection(p_inventory))/len(set(conlang))*100:.2f}',
+               ' '.join(set(conlang).difference(p_inventory)),
+               ' '.join(set(p_inventory)))
+
+    def native_info(self,event,**lang):
+        self.clear_home_board()
+        for itme in self.count_list:
+            itme.grid_forget()
+        for itme in self.things:
+            itme.grid_forget()
+        self.welcome['text']="Displaying information for "+list(lang.values())[0]+":"
+        for item in self.native_button_list:
+            item.grid_forget()  
+        index_of_lang = languages.index(list(lang.values())[0].lower())
+        # TODO fix
+        self.s = ' '.join(dictionaries[index_of_lang])
+        self.inventory = Label(text = self.s,anchor = NW,
+                               wraplength = 700,
+                              bg = 'white')
+        self.inventory.grid(row = 1,column = 0, pady = 30, padx = 40)
+        self.counter = Label(text = "# of segments = " +str(
+            len(dictionaries[index_of_lang])))
+        self.counter.grid(row = 2, column = 0)
+        # TODO native language inventory
+        # - percent of segments shared by conlang and parent
+        parent_comparison = self.get_parent_percent(dictionaries[index_of_lang],index_of_lang)
+
+        self.parent = Label(text = f"Native language of authors: {self.get_parent(index_of_lang)}")
+        self.parent.grid(row=3,column=0)
+
+        self.parent_inventory_label = Label(text = f"Combined native inventory:")
+        self.parent_inventory_label.grid(row = 4, column = 0)
+
+        self.parent_inventory = Label(text = parent_comparison[2])
+        self.parent_inventory.grid(row = 5, column = 0)
+
+        self.percent_shared = Label(text=f"{parent_comparison[0]}% of segments in native inventory")
+        self.percent_shared.grid(row=6,column=0)
+
+        self.unique = Label(text=f"Unique segments: {parent_comparison[1]}")
+        self.unique.grid(row=7,column=0)
+
+        self.home_button.bind('<Button-1>',self.remove_native)
+        self.home_button.grid(row = 8, column = 0,pady = 30)
+
 
     def language_info (self,event,**lang):
         self.clear_home_board()
@@ -117,14 +207,29 @@ class App(Frame):
         self.counter = Label(text = "# of segments = " +str(
             len(dictionaries[index_of_lang])))
         self.counter.grid(row = 2, column = 0)
+
+        self.parent = Label(text = f"Native language of authors: {self.get_parent(index_of_lang)}")
+        self.parent.grid(row=3,column=0)
         self.home_button.bind('<Button-1>',self.remove_inventory)
-        self.home_button.grid(row = 3, column = 0,pady = 30)
+        self.home_button.grid(row = 4, column = 0,pady = 30)
 
     def remove_inventory (self,event):
         self.inventory.grid_forget()
         self.counter.grid_forget()
+        self.parent.grid_forget()
         self.home(event)
-          
+
+    def remove_native(self,event):
+        self.inventory.grid_forget()
+        self.counter.grid_forget()
+        self.parent.grid_forget()
+        self.parent_inventory_label.grid_forget() 
+        self.parent_inventory.grid_forget()
+        self.percent_shared.grid_forget()
+        self.unique.grid_forget()
+        self.home(event)
+
+
     def sort_by_sound (self,event):
         """Returns an ordered list of languages by number of sounds."""
         self.clear_home_board()
@@ -727,6 +832,7 @@ class App(Frame):
         self.ask_class.grid(row = 5, column = 1,pady=5, sticky=W)
         self.ask_find.grid(row = 6, column = 1,pady=5, sticky=W)
         self.ask_compare.grid(row = 7, column = 1,pady=5, sticky=W)
+        self.ask_native.grid(row = 8, column = 1,pady=5, sticky=W)
         self.home_button.grid_forget()
 
     def clear_home_board (self):
@@ -737,6 +843,7 @@ class App(Frame):
         self.ask_class.grid_forget()
         self.ask_find.grid_forget()
         self.ask_compare.grid_forget()
+        self.ask_native.grid_forget()
   
 root = Tk()
 cuter = font.Font(family="Arial",size=14,weight="normal")
