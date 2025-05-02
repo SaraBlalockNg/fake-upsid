@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conlang UPSID Analog</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+    }
+    button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { languages, inventories, parents, families, parentInventories } from './inventories.js';
+    import { features } from './articulations.js';
+
+    const app = document.getElementById('app');
+
+    function formatLangName(name) {
+      let newName =  name.replace(/(^|_)([a-z])/g, (_, p1, p2) => (p1 === '_' ? ' ' : '') + p2.toUpperCase());
+      switch (newName){
+      case "Dni":
+        newName = "D'ni";
+        break;
+      case "Navi":
+        newName = "Na'vi";
+        break;
+      default:
+        break;
+      }
+      return newName
+    }
+
+    function clearApp() {
+      app.innerHTML = '';
+    }
+
+    function createMenu() {
+      clearApp();
+      const title = document.createElement('p');
+      title.textContent = "This is the interface to the conlang UPSID analog. Do you want to:";
+      app.appendChild(title);
+
+      const options = [
+        "get information about a langauge?",
+        "sort languages by the number of sounds?",
+        "sort languages by their frequency index?",
+        "get information about a language class?",
+        "find certain sounds and languages that have them?",
+        "compare two languages?",
+        "compare a conlang to the native language of its author?"
+      ];
+
+      options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.onclick = () => handleOption(index);
+        app.appendChild(button);
+        app.appendChild(document.createElement('br'));
+      });
+    }
+
+    function handleOption(index) {
+      switch(index){
+      case 0:
+        showLanguageInfoOption();
+        break;
+      case 1:
+        showSortedByInventorySize();
+        break;
+      case 2:
+        showSortedByFrequencyIndex();
+        break;
+      case 3:
+        showLanguageClasses();
+        break;
+      case 4:
+        // segmentInfoPage();
+        break;
+      case 5:
+        showTwoLangsInfo();
+        break;
+      case 6:
+        showNativeInfoOption();
+        break;
+      }
+    }
+
+    function homeButton(){
+      const homeButton = document.createElement('button');
+      homeButton.textContent = 'Home';
+      homeButton.onclick = createMenu;
+      app.appendChild(homeButton);
+    }
+
+    function showLanguageInfoOption() {
+      clearApp();
+      const prompt = document.createElement('p');
+      prompt.textContent = "Click on a language to learn about its inventory:";
+      app.appendChild(prompt);
+
+      const langContainer = document.createElement('div');
+      langContainer.style.display = 'grid';
+      langContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      langContainer.style.gap = '10px';
+      languages.forEach(lang => {
+        const button = document.createElement('button');
+        button.textContent = formatLangName(lang);
+        button.onclick = () => showLanguageInventory(lang);
+        langContainer.appendChild(button);
+      });
+      app.appendChild(langContainer);
+      homeButton();
+    }
+
+    function showLanguageInventory(lang) {
+      clearApp();
+      const inv = inventories[lang];
+      const native = parents[lang];
+      const inventoryDisplay = document.createElement('p');
+      inventoryDisplay.innerHTML = `<strong>${formatLangName(lang)} inventory:</strong><br>${inv.join(' ')}`;
+      app.appendChild(inventoryDisplay);
+
+      const countDisplay = document.createElement('p');
+      countDisplay.textContent = `# of segments = ${inv.length}`;
+      app.appendChild(countDisplay);
+
+      const parentDisplay = document.createElement('p');
+      parentDisplay.textContent = `Native language of authors: ${Array.isArray(native) ? native.join(', ') : native}`;
+      app.appendChild(parentDisplay);
+
+      homeButton();
+    }
+
+    function showSortedByInventorySize() {
+      clearApp();
+
+      const title = document.createElement('p');
+      title.textContent = "Languages from the least number of phones to most:";
+      app.appendChild(title);
+
+      const table = document.createElement('table');
+      table.style.margin = '0 auto';
+      const header = document.createElement('tr');
+      const nameHeader = document.createElement('th');
+      nameHeader.textContent = 'Language';
+      const countHeader = document.createElement('th');
+      countHeader.textContent = '# of Segments';
+      header.appendChild(nameHeader);
+      header.appendChild(countHeader);
+      table.appendChild(header);
+
+      const sorted = languages
+        .map(lang => ({ name: lang, count: inventories[lang].length }))
+        .sort((a, b) => a.count - b.count);
+
+      sorted.forEach(({ name, count }) => {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = formatLangName(name);
+        link.onclick = () => showLanguageInventory(name);
+        nameCell.appendChild(link);
+
+        const countCell = document.createElement('td');
+        countCell.textContent = count;
+        row.appendChild(nameCell);
+        row.appendChild(countCell);
+        table.appendChild(row);
+      });
+
+      app.appendChild(table);
+
+      homeButton();
+    }
+
+    function showSortedByFrequencyIndex() {
+      clearApp();
+
+      const title = document.createElement('p');
+      title.textContent = "Languages sorted by frequency index (least to greatest):";
+      app.appendChild(title);
+
+      let allSegments = new Set();
+      for (let [key, value] of Object.entries(inventories)) {
+          for (let segment of value) {
+            allSegments.add(segment);
+          }
+      }
+
+      let frequencies = {};
+      const numLangs = languages.length;
+
+      for (let segment of allSegments){
+        let count = 0;
+        for (let [thisLang,thisInventory] of Object.entries(inventories)){
+          if (thisInventory.includes(segment)){
+            count += 1;
+          }
+        }
+        frequencies[segment] = count / numLangs;
+      }
+
+      let frequencyIndex = {};
+      for (let [thisLang,thisInventory] of Object.entries(inventories)){
+        let theSum = 0;
+        for (let segment of thisInventory){
+          theSum += frequencies[segment];
+        }
+        frequencyIndex[thisLang] = theSum / thisInventory.length;
+      }
+      const sortedLangs = Object.entries(frequencyIndex)
+        .sort((a, b) => a[1] - b[1]);
+
+      const table = document.createElement('table');
+      table.style.margin = '0 auto';
+
+      const header = document.createElement('tr');
+      const headerColumns = ['Frequency Index', '# of Segments', 'Language'];
+      headerColumns.forEach(colText => {
+        const th = document.createElement('th');
+        th.textContent = colText;
+        th.style.paddingLeft = '50px';
+        th.style.paddingRight = '50px';
+
+        header.appendChild(th);
+      });
+      table.appendChild(header);
+
+      sortedLangs.forEach(([lang, freqIndex]) => {
+        const row = document.createElement('tr');
+
+        const freqCell = document.createElement('td');
+        freqCell.textContent = freqIndex.toFixed(6);
+
+        row.appendChild(freqCell);
+
+        const countCell = document.createElement('td');
+        countCell.textContent = inventories[lang].length;
+        row.appendChild(countCell);
+
+        const langCell = document.createElement('td');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = formatLangName(lang);
+        link.onclick = () => showLanguageInventory(lang);
+        langCell.appendChild(link);
+        row.appendChild(langCell);
+
+        table.appendChild(row);
+      });
+
+      app.appendChild(table);
+
+      homeButton();
+    }
+
+    function showLanguageClasses() {
+      clearApp();
+      const title = document.createElement('p');
+      title.textContent = 'These are the language classes (click to see languages):';
+      app.appendChild(title);
+
+      for (let [family,langs] of Object.entries(families)) {
+        const button = document.createElement('button');
+        button.textContent = `${family} (${langs.length.toString()} languages)`;
+        button.onclick = () => showLanguagesInClass(family);
+        app.appendChild(button);
+        app.appendChild(document.createElement('br'));
+      }
+      homeButton();
+    }
+
+    function showLanguagesInClass(family) {
+      clearApp();
+
+      const table = document.createElement('table');
+      table.style.margin = '0 auto';
+      const header = document.createElement('tr');
+      const nameHeader = document.createElement('td');
+      nameHeader.textContent = `Languages in the ${family} class:`; 
+      header.appendChild(nameHeader);
+      table.appendChild(header);
+
+      const langs = families[family] || [];
+      langs.forEach(lang => {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = formatLangName(lang);
+        link.onclick = () => showLanguageInventory(lang);
+        cell.appendChild(link);
+        row.appendChild(cell);
+        table.appendChild(row);
+      });
+
+      app.appendChild(table);
+
+      homeButton();
+    }
+
+    function showNativeInfoOption() {
+      showLanguageInfoOption();
+      const buttons = document.querySelectorAll('#app button');
+      buttons.forEach(btn => {
+        if (btn.textContent !== 'Home') {
+          const lang = btn.textContent.toLowerCase().replace(/ /g, '_');
+          btn.onclick = () => showNativeComparison(lang);
+        }
+      });
+    }
+
+    function showNativeComparison(lang){
+      clearApp();
+
+      const inv = inventories[lang];
+      const native = parents[lang];
+      const nativeInv = parentInventories[native];
+      const shared = inv.filter(seg => nativeInv.includes(seg));
+      const unique = inv.filter(seg => !nativeInv.includes(seg));
+      const percentShared = ((shared.length / inv.length) * 100).toFixed(2);
+
+      const title = document.createElement('p');
+      title.textContent = `Displaying information for ${formatLangName(lang)}:`;
+      app.appendChild(title);
+
+      const inventory = document.createElement('p');
+      inventory.innerHTML = `<strong>Inventory:</strong><br>${inv.join(' ')}`;
+      app.appendChild(inventory);
+
+      const count = document.createElement('p');
+      count.textContent = `# of segments = ${inv.length}`;
+      app.appendChild(count);
+
+      const parentInfo = document.createElement('p');
+      parentInfo.textContent = `Native language of authors: ${Array.isArray(native) ? native.join(', ') : native}`;
+      app.appendChild(parentInfo);
+
+      const sharedLabel = document.createElement('p');
+      sharedLabel.textContent = `Combined native inventory:`;
+      app.appendChild(sharedLabel);
+
+      const sharedInventory = document.createElement('p');
+      sharedInventory.textContent = shared.join(' ');
+      app.appendChild(sharedInventory);
+
+      const percentSharedLabel = document.createElement('p');
+      percentSharedLabel.textContent = `${percentShared}% of segments in native inventory`;
+      app.appendChild(percentSharedLabel);
+
+      const uniqueLabel = document.createElement('p');
+      uniqueLabel.textContent = `Unique segments:`;
+      app.appendChild(uniqueLabel);
+
+      const uniqueInventoryLabel = document.createElement('p');
+      uniqueInventoryLabel.textContent = unique.join(' ');
+      app.appendChild(uniqueInventoryLabel);
+
+      homeButton();
+    }
+
+    function showTwoLangsInfo(){
+      clearApp();
+      const title = document.createElement('p');
+      title.textContent = "Compare the sound inventory of two languages or a whole language class.";
+      app.appendChild(title);
+
+      const table = document.createElement('table');
+      table.style.margin = '0 auto';
+      const header = document.createElement('tr');
+      const nameHeader = document.createElement('th');
+      nameHeader.textContent = 'Compare two languages';
+      header.appendChild(nameHeader);
+      table.appendChild(header);
+      const lang1 = document.createElement('tr');
+      const lang1text = document.createElement('td');
+      lang1text.textContent = 'Language 1 (# of segments)';
+      const lang1DropdownCell = document.createElement('td');
+      const lang1Dropdown = document.createElement("select");      
+      lang1Dropdown.id = 'lang1'
+      let option = document.createElement("option");
+      option.value = "0";
+      option.text = '--Please select--';
+      lang1Dropdown.appendChild(option);
+      for (const [name, inventory] of Object.entries(inventories)) {
+          let option = document.createElement("option");
+          option.value = name;
+          option.text = `${formatLangName(name)} (${inventory.length})`;
+          lang1Dropdown.appendChild(option);
+      }
+      lang1DropdownCell.appendChild(lang1Dropdown);
+      lang1.appendChild(lang1text);
+      lang1.appendChild(lang1DropdownCell);
+      table.append(lang1);
+
+      const lang2 = document.createElement('tr');
+      const lang2text = document.createElement('td');
+      lang2text.textContent = 'Language 1 (# of segments)';
+      const lang2DropdownCell = document.createElement('td');
+      const lang2Dropdown = document.createElement("select");
+      lang2Dropdown.id = 'lang2'
+      option = document.createElement("option");
+      option.value = "0";
+      option.text = '--Please select--';
+      lang2Dropdown.appendChild(option);
+      for (const [name, inventory] of Object.entries(inventories)) {
+          let option = document.createElement("option");
+          option.value = name;
+          option.text = `${formatLangName(name)} (${inventory.length})`;
+          lang2Dropdown.appendChild(option);
+      }
+      lang2DropdownCell.appendChild(lang2Dropdown);
+      lang2.appendChild(lang2text);
+      lang2.appendChild(lang2DropdownCell);
+      table.append(lang2);
+
+      const header2 = document.createElement('tr');
+      const nameHeader2 = document.createElement('th');
+      nameHeader2.textContent = 'Compare two languages';
+      header2.appendChild(nameHeader2);
+      table.appendChild(header2);
+
+      const langClass = document.createElement('tr');
+      const langClassText = document.createElement('td');
+      langClassText.textContent = 'Compare languages within a class:';
+      const langClassDropdownCell = document.createElement('td');
+      const langClassDropdown = document.createElement("select");
+      langClassDropdown.id = 'languagefamily'
+      option = document.createElement("option");
+      option.value = "0";
+      option.text = '--Please select--';
+      langClassDropdown.appendChild(option);
+      for (const [name, langsInFamily] of Object.entries(families)) {
+          let option = document.createElement("option");
+          option.value = name;
+          option.text = `${name} (${langsInFamily.length})`;
+          langClassDropdown.appendChild(option);
+      }
+      langClassDropdownCell.appendChild(langClassDropdown);
+      langClass.appendChild(langClassText);
+      langClass.appendChild(langClassDropdownCell);
+      table.append(langClass);
+
+      const cells = table.querySelectorAll("td, th");
+      cells.forEach(cell => {
+          cell.style.paddingLeft = "40px";
+          cell.style.paddingRight = "40px";
+          cell.style.paddingTop = "20px";
+          cell.style.paddingBottom = "20px";
+      });
+
+      app.appendChild(table);
+
+      // const goButton = document.createElement('button');
+      // goButton.textContent = 'Go';
+      // goButton.onclick = compareLangs();
+      // app.appendChild(goButton);
+      const goButton = document.createElement('button');
+      goButton.textContent = 'Go';
+      goButton.onclick = compareLangs;
+      app.appendChild(goButton);
+
+      homeButton();
+    }
+
+    function compareLangs(){
+      let lang1 = document.getElementById('lang1').value
+      let lang2 = document.getElementById('lang2').value
+      let family = document.getElementById('languagefamily').value
+      
+      if (family !== "0") {
+        clearApp();
+        let intersection = new Set(inventories[families[family][0].toLowerCase().replace(/ /g, '_')]);
+        for (let lang of families[family]){
+          let newSet = new Set(inventories[lang.toLowerCase().replace(/ /g, '_')]);
+          intersection = intersection.intersection(newSet);
+        }
+        const response = document.createElement('p');
+        if (intersection.size == 0){
+          response.textContent = `The ${family} does not share any segments across all languages.`;
+          app.appendChild(response);
+        } else {
+          response.textContent = `The ${family} class shares the following segments:`;
+          app.appendChild(response);
+          const sharedInventory = document.createElement('p');
+          sharedInventory.textContent = Array.from(intersection).join(' ');
+          app.appendChild(sharedInventory);
+        }
+        homeButton();
+      } else if (lang1 != "0" && lang2 != "0") {
+        clearApp();
+        const lang1Inventory = new Set(inventories[lang1.toLowerCase().replace(/ /g, '_')]);
+        const lang2Inventory = new Set(inventories[lang2.toLowerCase().replace(/ /g, '_')]);
+        const intersection = lang1Inventory.intersection(lang2Inventory);
+        const response = document.createElement('p');
+        response.textContent = `${formatLangName(lang1)} and ${formatLangName(lang2)} share the following segments:`;
+        app.appendChild(response);
+        const sharedInventory = document.createElement('p');
+        sharedInventory.textContent = Array.from(intersection).join(' ');
+        app.appendChild(sharedInventory);
+        homeButton();
+      }
+    }
+
+    function segmentInfoPage(event) {
+      clearApp();
+
+      const createDropdown = (options,id) => {
+          const select = document.createElement('select');
+          options.forEach(option => {
+              const opt = document.createElement('option');
+              opt.text = option;
+              select.appendChild(opt);
+          });
+          select.style.marginLeft = '10px';
+          select.style.marginRight = '10px';
+          select.id = id;
+          return select;
+      };
+
+      const createLabel = (text,alignment) => {
+          const label = document.createElement('p');
+          label.innerText = text;
+          label.style.textAlign = alignment;
+          app.appendChild(label);
+          if (alignment == 'left'){
+            label.style.paddingLeft = '200px';
+          }
+      };
+
+      createLabel('Find languages that','left');
+      const contain = createDropdown(['do contain', 'do not contain'],'contain');
+      const any = createDropdown(['any', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],'any');
+      const numberOf = createDropdown(['number of', 'or less', 'or more'],'numberOf');
+      
+      const row1 = document.createElement('div');
+      for (const variable of [contain,any,numberOf]){
+        row1.appendChild(variable);
+      }
+      app.appendChild(row1)
+
+      createLabel('either vowels with the following criteria (default):','center');
+      const vlength = ['-any length-', 'overshort', 'short', 'long'];
+      const vmod = ['-any modifier-', 'no modifier', 'fricative', 'retroflexed', 'pharyngealized', 'laryngealized', 'nasalized'];
+      const vvoi = ['-any voicing-', 'breathy voicing', "'normal' voicing", 'voiceless'];
+      const vheight = ['-any height-', 'high', 'lowered high', 'higher mid', 'mid', 'lower mid', 'raised low', 'low'];
+      const vback = ['-any backness-', 'front', 'retracted front', 'central', 'fronted back', 'back'];
+      const vround = ['-any rounding-', 'unrounded', 'rounded'];
+      const vvowel = ['-any vowel-', 'Monophthong', 'Diphthong'];
+
+      createDropdown(vlength,'vlength');
+      createDropdown(vmod,'vmod');
+      createDropdown(vvoi,'vvoi');
+      createDropdown(vheight,'vheight');
+      createDropdown(vback,'vback');
+      createDropdown(vround,'vround');
+      createDropdown(vvowel,'vvowel');
+      
+      const row2 = document.createElement('div');
+      for (const variable of [vlength,vmod,vvoi,vheight]){
+        row2.appendChild(variable);
+      }
+      app.appendChild(row2)
+
+      const row3 = document.createElement('div');
+      for (const variable of [vback,vround,vvowel]){
+        row3.appendChild(variable);
+      }
+      app.appendChild(row3)
+
+      createLabel('or consonants with the following criteria:', 'center');
+
+      const clength = ['-any length-', 'short', 'long'];
+      const cvoi = ['-any voicing-', 'voiced', 'voiceless'];
+      const casp = ['-any aspiration, etc.-', 'no aspiration, etc.', 'aspirated', 'preaspirated', 'prestopped', 'prenasalized', 'breathy'];
+      const cart = ['-any sec. articulation-', 'no sec. articulation', 'labialized', 'palatalized', 'velarized', 'pharyngelaized', 'laryngealized', 'nasalized'];
+      const cplace = ['-any place-', 'bilabial', 'labiodental', 'dental', 'dental/alveolar', 'alveolar', 'palato-alveolar', 'retroflex', 'palatal', 'labial-palatal', 'velar', 'velar-alveolar', 'labial-velar', 'uvular', 'pharyngeal', 'glottal'];
+      const cmod = ['-any modifier-', 'no modifier', 'sibilant', 'lateral'];
+      const cmanner = ['-any manner-', 'click', 'affricated click', 'velar-fricated click', 'ejective stop', 'ejective fricative', 'ejective affricate', 'implosive', 'plosive', 'tap/flap', '(affricated) trill', 'nasal', 'affricate', 'fricative', 'r-sound', 'approximant'];
+      const crelease = ['-any release-', 'no release modifier', 'any release modifier', 'with breathy/fricative release', 'laterally released', 'nasally released'];
+
+      createDropdown(clength,'clength');
+      createDropdown(cvoi,'cvoi');
+      createDropdown(casp,'casp');
+      createDropdown(cart,'cart');
+      createDropdown(cplace,'cplace');
+      createDropdown(cmod,'cmod');
+      createDropdown(cmanner,'cmanner');
+      createDropdown(crelease,'crelease');
+
+      const row4 = document.createElement('div');
+      for (const variable of [clength,cvoi,casp,cart]){
+        row4.appendChild(variable);
+      }
+      app.appendChild(row4)
+
+      const row5 = document.createElement('div');
+      for (const variable of [cplace,cmod,cmanner,crelease]){
+        row5.appendChild(variable);
+      }
+      app.appendChild(row5)
+
+      const button = document.createElement('button');
+      button.innerText = 'Find sounds and languages';
+      button.style.margin = '20px';
+      button.addEventListener('click', findLanguagesForSegment);
+      app.appendChild(button);
+      homeButton();
+  }
+
+  function findLanguagesForSegment(){
+    // general criteria
+    let contain = document.getElementById('contain').value;
+    let any = document.getElementById('any').value;
+    let numberOf = document.getElementById('numberOf').value;
+
+    // vowel criteria
+    let vlength = document.getElementById('vlength').value;
+    let vmod = document.getElementById('vmod').value;
+    let vvoi = document.getElementById('vvoi').value;
+    let vheight = document.getElementById('vheight').value;
+    let vback = document.getElementById('vback').value;
+    let vround = document.getElementById('vround').value;
+    let vvowel = document.getElementById('vvowel').value;
+    let vowelCriteria = [vlength, vmod, vvoi, vheight, vback, vround, vvowel];
+
+    //consonant criteria
+    let clength = document.getElementById('clength').value;
+    let cvoi = document.getElementById('cvoi').value;
+    let casp = document.getElementById('casp').value;
+    let cart = document.getElementById('cart').value;
+    let cplace = document.getElementById('cplace').value;
+    let cmod = document.getElementById('cmod').value;
+    let cmanner = document.getElementById('cmanner').value;
+    let crelease = document.getElementById('crelease').value;
+    let consonantCriteria = [clength, cvoi, casp, cart, cplace, cmod, cmanner, crelease];
+
+    clearApp();
+
+    contain = (contain === 'do contain') ? 0 : 1;
+    anything = (anything === 'any') ? 0 : parseInt(anything);
+    numberof = (numberof === 'number of') ? 0 : (numberof === 'or less' ? 1 : 2);
+
+    
+    // if there's any consonant criteria, go with that
+    if (consonantCriteria.some(str => !str.startsWith('-any'))) {
+
+    } else {
+      // otherwise go with the vowel criteria
+    }
+  }
+  function testInventories (criteria, contain, numberof, anything){
+    const languagesToPrint = [];
+    const inventoriesToPrint = [];
+    const segmentInventory = new Set()
+    for (let [lang, inventory] of Object.entries(inventories)) {
+      let count = 0;
+      for (segment of inventory){
+        if (consonantCriteria.every(key => features[key]?.includes(segment))) {
+            segmentInventory.add(segment);
+            count += 1;
+        }
+      }
+      if (
+        (contain == 0 && (
+          (numberof == 2 && count >= anything) ||
+          (numberof == 1 && count <= anything) ||
+          (numberof == 0 && count == anything) ||
+          (anything == 0 && count > 0)
+        )) ||
+        (contain === 1 && (
+          (numberof == 0 && count !== anything) ||
+          (numberof == 1 && count > anything) ||
+          (numberof == 2 && count < anything) ||
+          (anything == 0 && count == 0)
+        ))
+      ) {
+        languagesToPrint.push(lang);
+        inventoriesToPrint.push(segmentInventory);
+      }
+    }
+    return [languagesToPrint, inventoriesToPrint];
+  }
+  createMenu();
+  </script>
+</body>
+</html>
