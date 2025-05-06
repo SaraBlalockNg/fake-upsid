@@ -651,17 +651,18 @@
 
     contain = (contain === 'do contain') ? 0 : 1;
     anything = (anything === 'any') ? 0 : parseInt(anything);
-    numberof = (numberof === 'number of') ? 0 : (numberof === 'or less' ? 1 : 2);
+    numberOf = (numberOf === 'number of') ? 0 : (numberOf === 'or less' ? 1 : 2);
 
     
     // if there's any consonant criteria, go with that
     if (consonantCriteria.some(str => !str.startsWith('-any'))) {
-
+      testInventories(consonantCriteria, contain, numberOf, anything);
     } else {
       // otherwise go with the vowel criteria
+      testInventories(vowelCriteria, contain, numberOf, anything);
     }
   }
-  function testInventories (criteria, contain, numberof, anything){
+  function testInventories (criteria, contain, numberOf, anything){
     const languagesToPrint = [];
     const inventoriesToPrint = [];
     const segmentInventory = new Set()
@@ -675,15 +676,15 @@
       }
       if (
         (contain == 0 && (
-          (numberof == 2 && count >= anything) ||
-          (numberof == 1 && count <= anything) ||
-          (numberof == 0 && count == anything) ||
+          (numberOf == 2 && count >= anything) ||
+          (numberOf == 1 && count <= anything) ||
+          (numberOf == 0 && count == anything) ||
           (anything == 0 && count > 0)
         )) ||
         (contain === 1 && (
-          (numberof == 0 && count !== anything) ||
-          (numberof == 1 && count > anything) ||
-          (numberof == 2 && count < anything) ||
+          (numberOf == 0 && count !== anything) ||
+          (numberOf == 1 && count > anything) ||
+          (numberOf == 2 && count < anything) ||
           (anything == 0 && count == 0)
         ))
       ) {
