@@ -564,15 +564,18 @@
       createDropdown(vvowel,'vvowel');
       
       const row2 = document.createElement('div');
-      for (const variable of [vlength,vmod,vvoi,vheight]){
-        row2.appendChild(variable);
-      }
+      row2.appendChild(vlength);
+      row2.appendChild(vmod);
+      row2.appendChild(vvoi);
+      row2.appendChild(vheight);
+
+
       app.appendChild(row2)
 
       const row3 = document.createElement('div');
-      for (const variable of [vback,vround,vvowel]){
-        row3.appendChild(variable);
-      }
+      row3.appendChild(vback);
+      row3.appendChild(vround);
+      row3.appendChild(vowel);
       app.appendChild(row3)
 
       createLabel('or consonants with the following criteria:', 'center');
@@ -596,15 +599,17 @@
       createDropdown(crelease,'crelease');
 
       const row4 = document.createElement('div');
-      for (const variable of [clength,cvoi,casp,cart]){
-        row4.appendChild(variable);
-      }
+      row4.appendChild(clength);
+      row4.appendChild(cvoi);
+      row4.appendChild(casp);
+      row4.appendChild(cart);
       app.appendChild(row4)
 
       const row5 = document.createElement('div');
-      for (const variable of [cplace,cmod,cmanner,crelease]){
-        row5.appendChild(variable);
-      }
+      row5.appendChild(cplace);
+      row5.appendChild(cmod);
+      row5.appendChild(cmanner);
+      row5.appendChild(crelease);
       app.appendChild(row5)
 
       const button = document.createElement('button');
